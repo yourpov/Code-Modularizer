@@ -17,7 +17,8 @@
 ## 🖼️ Example
 
 **Original:**
-```lualocal replicatedStorage = game:GetService("ReplicatedStorage")
+```lua
+local replicatedStorage = game:GetService("ReplicatedStorage")
 local players = game:GetService("Players")
 local lighting = game:GetService("Lighting")
 local httpService = game:GetService("HttpService")
@@ -46,7 +47,8 @@ teleport(Vector3.new(0, 150, 0))
 ```
 
 **With Code-Modularizer:**
-```lua---@diagnostic disable: undefined-global
+```lua
+---@diagnostic disable: undefined-global
 
 
 --[[
