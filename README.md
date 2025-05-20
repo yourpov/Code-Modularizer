@@ -43,7 +43,7 @@ teleport(Vector3.new(0, 150, 0))
 
 ```
 
-**With Code-Modularizer:**
+**Formatted:**
 ```lua
 ---@diagnostic disable: undefined-global
 
