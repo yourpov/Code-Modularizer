@@ -1,20 +1,17 @@
 # Code-Modularizer
 
-**Code-Modularizer** automates the transformation of Lua and Go scripts into modular, well-organized code. It adds branded headers, groups related functions, and can include your signature, all while preserving your code’s logic.
+**Code-Modularizer** Formats Lua and Go Code By adding branded headers and grouping related functions.
 
 ---
 
 ## 🚀 Features
 
-- 🧠 **Smart Refactoring** — Keeps code logic and order intact
-- 🧩 **Automatic Sectioning** — Adds headers for services, libraries, variables, functions, and more
-- 🛠 **Multi-language** — Supports Lua, Luau (Roblox), and Go
-- 🔒 **Safe** — Ensures functions are defined before use
-- ✍️ **Custom Branding** — Optionally adds your credits
+- Adds headers for services, libraries, variables, functions, and more
+- Supports Lua, Luau (Roblox), and Go
 
 ---
 
-## 🖼️ Example
+## 🕸️ Example
 
 **Original:**
 ```lua
