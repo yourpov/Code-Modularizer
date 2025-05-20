@@ -105,7 +105,3 @@ init()
 teleport(Vector3.new(0, 150, 0))
 
 ```
-
----
-
-Let Code-Modularizer handle structure—focus on your logic!
