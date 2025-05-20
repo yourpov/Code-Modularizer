@@ -2,11 +2,12 @@
   "name": "code-modularizer",
   "displayName": "Code-Modularizer",
   "description": "Automatically reformats Lua and Go code into clean organization.",
+  "icon": "Icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/yourpov/Code-Modularizer"
   },
-  "version": "0.0.1",
+  "version": "0.0.3",
   "publisher": "yourpov",
   "engines": {
     "vscode": "^1.100.0"

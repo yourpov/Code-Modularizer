@@ -33,6 +33,61 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(disposable);
 }
 
+
+function alignTables(code: string): string {
+	const lines = code.split('\n');
+	const output: string[] = [];
+
+	let inTable = false;
+	let tableLines: string[] = [];
+	let tableIndent = '';
+
+	for (const line of lines) {
+		const trimmed = line.trim();
+
+		if (trimmed.match(/^local\s+\w+\s*=\s*{$/)) {
+			inTable = true;
+			tableIndent = line.match(/^\s*/)?.[0] ?? '';
+			output.push(line); // keep the original "local Table = {"
+			continue;
+		}
+
+		if (inTable && trimmed === '}') {
+			// Align table lines before closing
+			const aligned = alignTableBlock(tableLines, tableIndent + '    ');
+			output.push(...aligned);
+			output.push(tableIndent + '}');
+			tableLines = [];
+			inTable = false;
+			continue;
+		}
+
+		if (inTable) {
+			tableLines.push(trimmed);
+		} else {
+			output.push(line);
+		}
+	}
+
+	return output.join('\n');
+}
+
+function alignTableBlock(lines: string[], indent: string): string[] {
+	const parts = lines.map(line => {
+		const match = line.match(/^(\w+)\s*=\s*(.+),?$/);
+		if (!match) return [line]; // non-standard line
+		return [match[1], match[2].replace(/,$/, '')]; // [key, value]
+	});
+
+	const keyWidth = Math.max(...parts.map(p => p[0]?.length || 0));
+
+	return parts.map(p => {
+		if (p.length === 1) return indent + p[0]; // skip unparsed
+		const [key, value] = p;
+		return `${indent}${key.padEnd(keyWidth)} = ${value},`;
+	});
+}
+
 function formatLua(text: string): string {
 	const lines = text.split('\n');
 
@@ -56,6 +111,10 @@ function formatLua(text: string): string {
 	let insideFunction = false;
 	let functionBlock: string[] = [];
 
+	let insideTable = false;
+	let tableBlock: string[] = [];
+	let tableDepth = 0;
+
 	let lastType: string | null = null;
 
 	function insertHeader(type: string) {
@@ -74,7 +133,6 @@ function formatLua(text: string): string {
 		const line = lines[i];
 		const trimmed = line.trim();
 
-		// Skip large comment blocks
 		if (trimmed.startsWith('--[[') && trimmed !== '--[[') continue;
 		if (trimmed.startsWith('---@')) {
 			diagnostics.push(line);
@@ -92,42 +150,69 @@ function formatLua(text: string): string {
 			}
 			continue;
 		}
-
 		if (trimmed.startsWith('function') || trimmed.startsWith('local function')) {
 			insideFunction = true;
 			functionBlock = [line];
 			continue;
 		}
 
-		// Detect services
+		// Detect full nested table blocks
+		if (insideTable) {
+			tableBlock.push(line);
+			tableDepth += (trimmed.match(/{/g) || []).length;
+			tableDepth -= (trimmed.match(/}/g) || []).length;
+
+			if (tableDepth <= 0) {
+				insertHeader('Tables');
+				output.push(...tableBlock);
+				tableBlock = [];
+				insideTable = false;
+				tableDepth = 0;
+			}
+			continue;
+		}
+		if (!insideTable && trimmed.match(/^local\s+\w+\s*=\s*{?/)) {
+			insideTable = true;
+			tableDepth = (trimmed.match(/{/g) || []).length - (trimmed.match(/}/g) || []).length;
+			tableBlock = [line];
+			continue;
+		}
+
+		// Detect metatables
+		if (trimmed.match(/^setmetatable\(.+\{?/)) {
+			insertHeader('Tables');
+			output.push(line);
+			continue;
+		}
+
+		// Services
 		if (trimmed.match(/^local\s+\w+\s*=\s*game:GetService\(.+\)/)) {
 			insertHeader('Services');
 			output.push(line);
 			continue;
 		}
 
-		// Detect libraries
+		// Libraries
 		if (trimmed.match(/^local\s+\w+\s*=\s*(loadstring|getfenv|require)\b/)) {
 			insertHeader('Libraries');
 			output.push(line);
 			continue;
 		}
 
-		// Detect variables
+		// Variables
 		if (trimmed.startsWith('local ') && trimmed.includes('=')) {
 			insertHeader('Variables');
 			output.push(line);
 			continue;
 		}
 
-		// Other (includes function calls, flow logic, etc.)
+		// Everything else
 		if (trimmed !== '') {
 			insertHeader('Other');
 			output.push(line);
 		}
 	}
 
-	// Prepend diagnostics + credits
 	const final: string[] = [
 		...(diagnostics.length ? diagnostics : ['---@diagnostic disable: undefined-global']),
 		'',
@@ -137,7 +222,8 @@ function formatLua(text: string): string {
 		...output
 	];
 
-	return final.join('\n');
+	const formatted = final.join('\n');
+	return alignTables(formatted);
 }
 
 
