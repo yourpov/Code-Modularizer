@@ -1,0 +1,70 @@
+{
+  "name": "code-modularizer",
+  "displayName": "Code-Modularizer",
+  "description": "Automatically reformats Lua and Go code into clean organization.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourpov/Code-Modularizer"
+  },
+  "version": "0.0.1",
+  "publisher": "yourpov",
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+"categories": [
+  "Programming Languages",
+  "Snippets"
+],
+  "activationEvents": [
+    "onLanguage:lua",
+    "onLanguage:luau",
+    "onLanguage:go"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "modularizer.formatModular",
+        "title": "Format as Modular"
+      }
+    ],
+    "configuration": {
+      "title": "Code-Modularizer Settings",
+      "properties": {
+        "modularizer.formatMode": {
+          "type": "string",
+          "enum": ["strict", "preserveHeaders"],
+          "default": "strict",
+          "description": "Choose how aggressively code should be restructured. 'strict' rewrites layout, 'preserveHeaders' keeps custom user sections."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "npm run check-types && npm run lint && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "npm run check-types && npm run lint && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.100.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^8.31.1",
+    "@typescript-eslint/parser": "^8.31.1",
+    "eslint": "^9.25.1",
+    "esbuild": "^0.25.3",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.8.3",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.5.2"
+  }
+}
